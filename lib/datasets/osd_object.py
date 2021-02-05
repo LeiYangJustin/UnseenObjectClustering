@@ -35,6 +35,9 @@ class OSDObject(data.Dataset, datasets.imdb):
 
         # get all images
         data_path = os.path.join(self._osd_object_path, 'image_color')
+
+        print("OSD ", data_path)
+        
         self.image_files = sorted(glob.glob(data_path + '/*.png'))
 
         print('%d images for dataset %s' % (len(self.image_files), self._name))
@@ -83,11 +86,9 @@ class OSDObject(data.Dataset, datasets.imdb):
         foreground_labels = self.process_label(foreground_labels)
         label_blob = torch.from_numpy(foreground_labels).unsqueeze(0)
 
-        index = filename.find('OSD')
         sample = {'image_color': image_blob,
                   'image_color_bgr': im_tensor_bgr,
-                  'label': label_blob,
-                  'filename': filename[index+4:]}
+                  'label': label_blob}
 
         # Depth image
         if cfg.INPUT == 'DEPTH' or cfg.INPUT == 'RGBD':
