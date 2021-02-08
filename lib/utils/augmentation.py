@@ -11,7 +11,7 @@ import cv2
 
 # My libraries
 from utils import mask as util_
-from fcn.config import cfg
+# from fcn.config import cfg
 
 
 ##### Useful Utilities #####

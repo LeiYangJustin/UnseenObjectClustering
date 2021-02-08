@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import copy
-from fcn.config import cfg
+# from fcn.config import cfg
 from networks.utils import log_softmax_high_dimension, softmax_high_dimension
 from networks.embedding import EmbeddingLoss
 from . import unets
@@ -26,22 +26,24 @@ encoder_archs = {
 class SEGNET(nn.Module):
     '''SEGNET a Encoder-Decoder for Object Segmentation.'''
     def __init__(self, init_weights=True, batch_norm=False, in_channels=3,
-                 network_name='vgg', num_units=64, use_coordconv=False):
+                 network_name='vgg', num_units=64, use_coordconv=False, cfg=None):
         super(SEGNET, self).__init__()
 
         self.network_name = network_name
         self.in_channels = in_channels
+
+        ## parameters
         self.metric = cfg.TRAIN.EMBEDDING_METRIC
         self.normalize = cfg.TRAIN.EMBEDDING_NORMALIZATION
         self.input_type = cfg.INPUT
         self.fusion_type = cfg.TRAIN.FUSION_TYPE
         self.embedding_pretrain = cfg.TRAIN.EMBEDDING_PRETRAIN
-
         # embedding loss
         alpha = cfg.TRAIN.EMBEDDING_ALPHA
         delta = cfg.TRAIN.EMBEDDING_DELTA
         lambda_intra = cfg.TRAIN.EMBEDDING_LAMBDA_INTRA
         lambda_inter = cfg.TRAIN.EMBEDDING_LAMBDA_INTER
+
         self.embedding_loss = EmbeddingLoss(alpha, delta, lambda_intra, lambda_inter, self.metric, self.normalize)
 
         decoder_archs = {
@@ -170,8 +172,8 @@ def seg_unet_embedding(num_classes=2, num_units=64, data=None):
     update_model(model, data)
     return model
 
-def seg_resnet34_8s_embedding(num_classes=2, num_units=64, data=None):
-    model = SEGNET(in_channels=3, network_name='Resnet34_8s', num_units=num_units)
+def seg_resnet34_8s_embedding(num_classes=2, num_units=64, data=None, cfg=None):
+    model = SEGNET(in_channels=3, network_name='Resnet34_8s', num_units=num_units, cfg=cfg)
     update_model(model, data)
     return model
 

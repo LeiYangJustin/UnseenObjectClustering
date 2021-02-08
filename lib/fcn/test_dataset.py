@@ -12,7 +12,7 @@ import cv2
 import scipy
 import matplotlib.pyplot as plt
 
-from fcn.config import cfg
+# from fcn.config import cfg
 from fcn.test_common import _vis_minibatch_segmentation, _vis_features, _vis_minibatch_segmentation_final
 from transforms3d.quaternions import mat2quat, quat2mat, qmult
 from utils.mean_shift import mean_shift_smart_init

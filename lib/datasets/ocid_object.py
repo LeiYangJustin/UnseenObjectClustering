@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import datasets
 import pcl
 from pathlib import Path
-from fcn.config import cfg
+# from fcn.config import cfg
 from utils.blob import chromatic_transform, add_noise
 from utils import mask as util_
 

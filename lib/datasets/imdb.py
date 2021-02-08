@@ -8,7 +8,7 @@ import numpy as np
 import datasets
 import math
 import glob
-from fcn.config import cfg
+# from fcn.config import cfg
 
 class imdb(object):
     """Image database."""

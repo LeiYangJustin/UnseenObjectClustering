@@ -8,7 +8,7 @@ import sys, os
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from fcn.config import cfg
+# from fcn.config import cfg
 from utils.mask import visualize_segmentation
 
 

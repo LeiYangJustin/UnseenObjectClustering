@@ -9,8 +9,10 @@ import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from fcn.config import cfg
+# from fcn.config import cfg
 from fcn.test_common import _vis_minibatch_segmentation
+
+from tqdm import tqdm 
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -34,7 +36,7 @@ class AverageMeter(object):
         return '{:.3f} ({:.3f})'.format(self.val, self.avg)
 
 
-def train_segnet(train_loader, network, optimizer, epoch):
+def train_segnet(train_loader, network, optimizer, epoch, cfg):
 
     batch_time = AverageMeter()
     epoch_size = len(train_loader)
@@ -42,7 +44,7 @@ def train_segnet(train_loader, network, optimizer, epoch):
     # switch to train mode
     network.train()
 
-    for i, sample in enumerate(train_loader):
+    for i, sample in tqdm(enumerate(train_loader), desc='train: ', total=epoch_size, ncols=80):
 
         end = time.time()
 
@@ -68,9 +70,9 @@ def train_segnet(train_loader, network, optimizer, epoch):
         loss.backward()
         optimizer.step()
 
-        # measure elapsed time
-        batch_time.update(time.time() - end)
+        # # measure elapsed time
+        # batch_time.update(time.time() - end)
+        # print('[%d/%d][%d/%d], loss %.4f, loss intra: %.4f, loss_inter %.4f, lr %.6f, time %.2f' \
+        #     % (epoch, cfg.epochs, i, epoch_size, loss, intra_cluster_loss, inter_cluster_loss, optimizer.param_groups[0]['lr'], batch_time.val))
 
-        print('[%d/%d][%d/%d], loss %.4f, loss intra: %.4f, loss_inter %.4f, lr %.6f, time %.2f' \
-            % (epoch, cfg.epochs, i, epoch_size, loss, intra_cluster_loss, inter_cluster_loss, optimizer.param_groups[0]['lr'], batch_time.val))
         cfg.TRAIN.ITERS += 1

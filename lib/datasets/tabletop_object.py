@@ -15,7 +15,7 @@ import glob
 import matplotlib.pyplot as plt
 import datasets
 
-from fcn.config import cfg
+# from fcn.config import cfg
 from utils.blob import chromatic_transform, add_noise
 from utils import augmentation
 from utils import mask as util_
@@ -94,7 +94,12 @@ def compute_xyz(depth_img, camera_params):
 
 
 class TableTopObject(data.Dataset, datasets.imdb):
-    def __init__(self, image_set, tabletop_object_path = None):
+    def __init__(self, image_set, tabletop_object_path = None, cfg = None):
+        
+        assert cfg is not None
+        self.cfg = cfg
+
+        self.cfg.PIXEL_MEANS = np.array(self.cfg.PIXEL_MEANS)
 
         self._name = 'tabletop_object_' + image_set
         self._image_set = image_set
@@ -102,11 +107,13 @@ class TableTopObject(data.Dataset, datasets.imdb):
                             else tabletop_object_path
         self._classes_all = ('__background__', 'foreground')
         self._classes = self._classes_all
-        self._pixel_mean = torch.tensor(cfg.PIXEL_MEANS / 255.0).float()
+        self._pixel_mean = torch.tensor(self.cfg.PIXEL_MEANS / 255.0).float()
         self.params = data_loading_params
 
+        print(self._pixel_mean)
+
         # crop dose not use background
-        if cfg.TRAIN.SYN_CROP:
+        if self.cfg.TRAIN.SYN_CROP:
             self.NUM_VIEWS_PER_SCENE = 5
         else:
             self.NUM_VIEWS_PER_SCENE = 7
@@ -203,7 +210,7 @@ class TableTopObject(data.Dataset, datasets.imdb):
                 x_max = cx + y_delta / 2
 
             sidelength = x_max - x_min
-            padding_percentage = np.random.uniform(cfg.TRAIN.min_padding_percentage, cfg.TRAIN.max_padding_percentage)
+            padding_percentage = np.random.uniform(self.cfg.TRAIN.min_padding_percentage, self.cfg.TRAIN.max_padding_percentage)
             padding = int(round(sidelength * padding_percentage))
             if padding == 0:
                 padding = 25
@@ -226,7 +233,7 @@ class TableTopObject(data.Dataset, datasets.imdb):
             break
 
         # resize
-        s = cfg.TRAIN.SYN_CROP_SIZE
+        s = self.cfg.TRAIN.SYN_CROP_SIZE
         img_crop = cv2.resize(img_crop, (s, s))
         label_crop = cv2.resize(label_crop, (s, s), interpolation=cv2.INTER_NEAREST)
         if depth is not None:
@@ -262,7 +269,7 @@ class TableTopObject(data.Dataset, datasets.imdb):
 
         # Get view number
         view_num = idx % self.NUM_VIEWS_PER_SCENE
-        if cfg.TRAIN.SYN_CROP:
+        if self.cfg.TRAIN.SYN_CROP:
             view_num += 2
 
         # Label
@@ -276,7 +283,7 @@ class TableTopObject(data.Dataset, datasets.imdb):
         filename = os.path.join(scene_dir, 'rgb_%05d.jpeg' % view_num)
         im = cv2.imread(filename)
 
-        if cfg.INPUT == 'DEPTH' or cfg.INPUT == 'RGBD':
+        if self.cfg.INPUT == 'DEPTH' or self.cfg.INPUT == 'RGBD':
             # Depth image
             depth_img_filename = os.path.join(scene_dir, 'depth_%05d.png' % view_num)
             depth_img = cv2.imread(depth_img_filename, cv2.IMREAD_ANYDEPTH) # This reads a 16-bit single-channel image. Shape: [H x W]
@@ -285,27 +292,27 @@ class TableTopObject(data.Dataset, datasets.imdb):
             xyz_img = None
 
         # crop
-        if cfg.TRAIN.SYN_CROP:
+        if self.cfg.TRAIN.SYN_CROP:
             im, foreground_labels, xyz_img = self.pad_crop_resize(im, foreground_labels, xyz_img)
             foreground_labels = self.process_label(foreground_labels)
 
         # sample labels
-        if cfg.TRAIN.EMBEDDING_SAMPLING:
-            foreground_labels = self.sample_pixels(foreground_labels, cfg.TRAIN.EMBEDDING_SAMPLING_NUM)
+        if self.cfg.TRAIN.EMBEDDING_SAMPLING:
+            foreground_labels = self.sample_pixels(foreground_labels, self.cfg.TRAIN.EMBEDDING_SAMPLING_NUM)
 
         label_blob = torch.from_numpy(foreground_labels).unsqueeze(0)
         sample = {'label': label_blob}
 
-        if cfg.TRAIN.CHROMATIC and cfg.MODE == 'TRAIN' and np.random.rand(1) > 0.1:
+        if self.cfg.TRAIN.CHROMATIC and self.cfg.MODE == 'TRAIN' and np.random.rand(1) > 0.1:
             im = chromatic_transform(im)
-        if cfg.TRAIN.ADD_NOISE and cfg.MODE == 'TRAIN' and np.random.rand(1) > 0.1:
+        if self.cfg.TRAIN.ADD_NOISE and self.cfg.MODE == 'TRAIN' and np.random.rand(1) > 0.1:
             im = add_noise(im)
         im_tensor = torch.from_numpy(im) / 255.0
         im_tensor -= self._pixel_mean
         image_blob = im_tensor.permute(2, 0, 1)
         sample['image_color'] = image_blob
 
-        if cfg.INPUT == 'DEPTH' or cfg.INPUT == 'RGBD':
+        if self.cfg.INPUT == 'DEPTH' or self.cfg.INPUT == 'RGBD':
             depth_blob = torch.from_numpy(xyz_img).permute(2, 0, 1)
             sample['depth'] = depth_blob
 

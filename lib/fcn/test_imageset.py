@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from fcn.config import cfg
+# from fcn.config import cfg
 from fcn.test_common import normalize_descriptor
 from transforms3d.quaternions import mat2quat, quat2mat, qmult
 from utils.se3 import *
