@@ -3,6 +3,8 @@ data/
 ngc/
 experiments/maskrcnn_configs
 
+depthOIS/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -13,7 +13,7 @@ import cv2
 import glob
 import matplotlib.pyplot as plt
 import datasets
-import pcl
+# import pcl
 
 # from fcn.config import cfg
 from utils.blob import chromatic_transform, add_noise
